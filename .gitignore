@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+
+# Build output. The tables are checked in as source, but nothing else is.
+build/
+dist/
+*.egg-info/
+
+# The Census archive genzips.py downloads once and reuses. Megabytes, and
+# reproducible from the URL in the generator.
+tools/cache/

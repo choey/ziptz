@@ -8,6 +8,32 @@ version = "0.1.0"
 description = "US ZIP code to IANA time zone, standard library only"
 requires-python = ">=3.9"
 readme = "README.md"
+# The classic table form rather than PEP 639's bare SPDX string: that needs
+# setuptools 77, and this asks for 61. Nothing here is worth raising the floor
+# over until the classifier below is actually removed upstream.
+license = { text = "MIT" }
+authors = [{ name = "cho", email = "choey2k5@gmail.com" }]
+# What someone would actually type into a search box looking for this.
+keywords = ["zip", "zipcode", "postal", "timezone", "time-zone", "tz", "iana", "olson", "usa"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Localization",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/choey/ziptz"
+Repository = "https://github.com/choey/ziptz"
+Issues = "https://github.com/choey/ziptz/issues"
 
 # The package is this directory: ziptz.py holds the library and __init__.py
 # hands through to it, so a clone can import the directory and a copy of
@@ -15,6 +41,10 @@ readme = "README.md"
 # two setuptools guesses at.
 [tool.setuptools]
 packages = ["ziptz"]
+# NOTICE rides along with LICENSE into the wheel and the sdist: it carries the
+# ODbL attribution the generated tables are distributed under, so a copy of
+# this library that lost it would be missing something it has to keep.
+license-files = ["LICENSE", "NOTICE"]
 
 [tool.setuptools.package-dir]
 ziptz = "."

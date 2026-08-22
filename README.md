@@ -21,8 +21,8 @@ ziptz.generic("94110")        # 'PT', whatever the date
 
 The two implementations answer identically for every ZIP code, down to the
 wording of the errors — the tables are generated into both in one pass by
-[`tools/genzips.py`](../tools/genzips.py), and
-[`tools/difftest.sh`](../tools/difftest.sh) compares them.
+[`tools/genzips.py`](tools/genzips.py), and `make test` puts all 101,000
+tokens through both and compares every answer. Not a claim; a build step.
 
 ## Accuracy
 
@@ -48,19 +48,16 @@ release. They are wrong for historical dates: several places have changed zone
 
 ## Install
 
-It lives in the [clock](https://github.com/choey/clock) repository, as a module
-of its own — a nested Go module and a Python package, both installable without
-the clock.
-
 ```sh
-go get github.com/choey/clock/ziptz     # needs a ziptz/vN.N.N tag
-pip install ./ziptz                     # from a checkout
+go get github.com/choey/ziptz
+pip install ziptz
 ```
 
 Or copy it. Each side is one standard-library-only file: drop `ziptz.go` into
-a package of your own, or `ziptz.py` next to whatever imports it. That is what
-`clock.py` itself supports — `cp clock.py ziptz/ziptz.py /usr/local/bin/` is a
-complete install.
+a package of your own, or `ziptz.py` next to whatever imports it — no build
+step, nothing to fetch, and the tables come along because they *are* source.
+That is a supported way to use this rather than a workaround: at 1.3 KB of
+tables, the library is smaller than most manifests that would name it.
 
 Python therefore imports two ways, and both answer the same: `ziptz.py` alone
 is a module, and the directory around it is a package whose `__init__.py`
@@ -74,14 +71,21 @@ what a wheel contains.
 | --- | --- | --- |
 | `Zone(token) (string, error)` | `zone(token) -> str` | the IANA name for a 3- or 5-digit ZIP |
 | `Location(token) (*time.Location, error)` | `location(token) -> ZoneInfo` | the same, loaded from the system tz database |
-| `PrefixZone(p3) string` | `prefix_zone(p3) -> str` | the majority zone for a prefix, `""` if unassigned |
-| `Abbrev(token, at) (string, error)` | `abbrev(token, at=None) -> str` | the abbreviation at that instant, e.g. `PDT` |
+| `Abbrev(token, at) (string, error)` | `abbrev(token, at=None) -> str` | the abbreviation at a given instant — `PST` in winter, `PDT` in summer |
 | `Generic(token) (string, error)` | `generic(token) -> str` | the name without daylight saving, e.g. `PT` |
-| `ExactZone(zip5) string` | `exact_zone(zip5) -> str` | the exception for one ZIP, `""` if its prefix is right |
+| `PrefixZone(p3) string` | `prefix_zone(p3) -> str` | the majority zone for a prefix, `""` if unassigned |
+| `ExactZone(zip5) string` | `exact_zone(zip5) -> str` | the zone for one of the 233 ZIPs its prefix gets wrong, `""` for the rest |
 
-All four report an error for anything that is not three or five ASCII digits,
-and for prefixes the Postal Service has never assigned. Python raises
+Those first four report an error for anything that is not three or five ASCII
+digits, and for prefixes the Postal Service has never assigned. Python raises
 `ZipError`, a `ValueError`. Both error texts are written to be printed as-is.
+
+The last two are the two table lookups `Zone` is built from, exposed for a
+caller that wants to know which of them answered. Neither validates its input
+and neither reports an error: each returns `""` for anything it has no record
+of. For `ExactZone` that is almost every ZIP — only the 233 exceptions have a
+record at all — so `""` there means *no exception; the prefix is the answer*,
+not *unknown*. `Zone` is exactly the two composed in that order.
 
 ### The three names for one zone
 
@@ -177,15 +181,23 @@ zones/ZONES in both ziptz libraries.
 ## Tests
 
 ```sh
-make test        # both, or: make test-go / make test-py
+make test        # both suites, then the sweep below
 ```
+
+`make test-go` and `make test-py` run one suite each. `make sweep` is the
+third thing `make test` does, and the one the cases cannot be: every ZIP there
+is, through both libraries, compared. All 1,000 prefixes and all 100,000
+five-digit codes — 101,000 answers, zone names and error text alike — must
+come out identical, which is what makes "the two answer the same, ZIP for ZIP"
+a measured claim rather than a hopeful one. The cases above cover what someone
+thought of; this covers what nobody did.
 
 An installed copy carries its tests and their data, so it can prove itself
 where it landed rather than only in a checkout:
 
 ```sh
 python3 -m unittest ziptz.test_ziptz
-go test github.com/choey/clock/ziptz
+go test github.com/choey/ziptz
 ```
 
 The data is the point: `testdata/cases.json` holds the cases, the zones, the
@@ -215,3 +227,25 @@ fixing one fails the file and makes someone update it.
 Only two things are language-only, and the file says which: Go has no default
 arguments, so `abbrev`'s default of now is Python's to test, and only Python
 can be imported two ways, as a module and as a package.
+
+## Licence
+
+The code is MIT; see [LICENSE](LICENSE).
+
+The tables are a separate question, and [NOTICE](NOTICE) is the answer to it.
+They were produced from public-domain Census centroids resolved through
+timezone-boundary-builder, which is ODbL — so `NOTICE` carries that
+attribution and the reasoning for treating 1.3 KB of zone names as a produced
+work rather than an extract of the boundary database. It ships in the wheel
+and the sdist, and travels with the Go module. Keep it with any copy you make,
+including the copy-one-file install above.
+
+## Credits
+
+The hard part was already done by other people. [Evan
+Siroky](https://github.com/evansiroky/timezone-boundary-builder) builds the
+time zone boundaries out of OpenStreetMap, [Jannik
+Michel](https://github.com/jannikmi/timezonefinder) makes them queryable in
+Python, and the US Census Bureau publishes the ZCTA centroids. This library is
+the small, boring artefact left over once their work has been asked 33,791
+questions.

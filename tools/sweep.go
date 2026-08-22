@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/choey/clock/ziptz"
+	"github.com/choey/ziptz"
 )
 
 func main() {

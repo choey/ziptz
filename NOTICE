@@ -1,0 +1,63 @@
+ziptz
+Copyright (c) 2026 cho
+
+The source code in this repository is licensed under the MIT License; see
+LICENSE.
+
+This file records where the generated lookup tables in ziptz.go and ziptz.py
+come from, and the attribution their sources ask for. It travels with the
+source and with any distribution of it.
+
+--------------------------------------------------------------------------------
+ZIP code centroids
+--------------------------------------------------------------------------------
+
+US Census Bureau ZCTA Gazetteer file (2024).
+
+A work of the United States Government, and so not subject to copyright
+protection in the United States (17 U.S.C. Sec. 105). No conditions attach.
+
+    https://www.census.gov/geographies/reference-files/time-series/geo/
+    gazetteer-files.html
+
+--------------------------------------------------------------------------------
+Time zone boundaries
+--------------------------------------------------------------------------------
+
+timezone-boundary-builder, by Evan Siroky, whose boundaries derive from
+OpenStreetMap. Made available under the Open Database License (ODbL) v1.0.
+
+    https://github.com/evansiroky/timezone-boundary-builder
+    https://opendatacommons.org/licenses/odbl/1-0/
+
+Reached at generation time through timezonefinder, a development-only
+dependency that is neither imported by this library nor shipped with it.
+
+    https://github.com/jannikmi/timezonefinder
+
+Attribution, as ODbL Sec. 4.3 asks for:
+
+    Contains information from timezone-boundary-builder, which is made
+    available under the Open Database License (ODbL), and from OpenStreetMap,
+    (c) OpenStreetMap contributors.
+
+--------------------------------------------------------------------------------
+What the tables are
+--------------------------------------------------------------------------------
+
+The tables are not a copy or a redistribution of the boundary data. They were
+produced by taking public-domain Census ZCTA centroids and asking, for each
+one, which zone it falls in -- then reducing 33,791 answers to 157 run-length
+range records over 3-digit prefixes plus 233 individually named exceptions,
+about 1.3 KB in total. They carry no geometry: no boundary, coordinate, or
+shape from the source survives in them, and the source cannot be reconstructed
+from them.
+
+This is recorded as an aggregate rather than a substantial extract of the
+source database -- a Produced Work in ODbL's terms rather than a Derivative
+Database -- which is why the code is offered under a permissive licence with
+the attribution above carried alongside.
+
+Anyone redistributing this library should keep this file with it. Anyone whose
+own use makes that characterisation matter to them should read the ODbL and
+reach their own conclusion rather than relying on this note.

@@ -1,3 +1,3 @@
-module github.com/choey/clock/ziptz
+module github.com/choey/ziptz
 
 go 1.21
