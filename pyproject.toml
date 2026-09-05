@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -13,17 +13,20 @@ version = "0.1.0"
 description = "US ZIP code to IANA time zone, standard library only"
 requires-python = ">=3.9"
 readme = "README.md"
-# The classic table form rather than PEP 639's bare SPDX string: that needs
-# setuptools 77, and this asks for 61. Nothing here is worth raising the floor
-# over until the classifier below is actually removed upstream.
-license = { text = "MIT" }
+# PEP 639. The table form and the License:: classifier are both deprecated
+# with a removal date of 2027-02-18, and the argument for keeping them -- that
+# PEP 639 needs setuptools 77 where this asked for 61 -- was wrong: that floor
+# is for the *build* environment, which pip and python -m build populate with
+# the latest setuptools regardless. The build was already running on 77+ and
+# already warning. requires-python is untouched; 3.9 still installs this.
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "cho", email = "choey2k5@gmail.com" }]
 # What someone would actually type into a search box looking for this.
 keywords = ["zip", "zipcode", "postal", "timezone", "time-zone", "tz", "iana", "olson", "usa"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -47,10 +50,6 @@ Issues = "https://github.com/choey/ziptz/issues"
 # two setuptools guesses at.
 [tool.setuptools]
 packages = ["ziptz"]
-# NOTICE rides along with LICENSE into the wheel and the sdist: it carries the
-# ODbL attribution the generated tables are distributed under, so a copy of
-# this library that lost it would be missing something it has to keep.
-license-files = ["LICENSE", "NOTICE"]
 
 [tool.setuptools.package-dir]
 ziptz = "."

@@ -212,6 +212,38 @@ class Checks(unittest.TestCase):
                 with self.subTest(zone=case["zone"]):
                     self.assertEqual(case["generic"], case["winter"])
 
+    def errors_quote_a_bounded_token(self):
+        """An error is written to be printed as-is, which means it can land in
+        a log line, so the token it quotes has to be bounded and printable.
+
+        100,000 digits made a 100,065-character error, and a newline made an
+        error that was two log lines with the second one attacker-written.
+        bytes is here too: it has a length, isascii() and isdigit(), so it
+        passed every check and then missed both indexes, and the caller was
+        told San Francisco's prefix does not exist.
+        """
+        for name, token in (
+            ("very long", "9" * 100000),
+            ("newline", "941\nCRITICAL not really"),
+            ("ansi", "941\x1b[31m"),
+            ("astral", "941\U0001F4A9x"),
+            ("bytes", b"94110"),
+        ):
+            with self.subTest(token=name):
+                with self.assertRaises(ziptz.ZipError) as caught:
+                    ziptz.zone(token)
+                msg = str(caught.exception)
+                self.assertIn("is not a US ZIP code", msg)
+                self.assertLessEqual(
+                    len(msg), 120, "the error must not echo the token whole")
+                self.assertTrue(
+                    all(" " <= c <= "~" for c in msg),
+                    "the error must be printable ASCII")
+        # and a short one is still quoted whole rather than trimmed
+        with self.assertRaises(ziptz.ZipError) as caught:
+            ziptz.zone("9411")
+        self.assertIn('"9411"', str(caught.exception))
+
     def prefix_zone_wants_three_digits(self):
         """A prefix is three digits or it is nothing.
 
@@ -292,6 +324,7 @@ class Checks(unittest.TestCase):
         "generic-covers-every-zone": generic_covers_every_zone,
         "non-shifting-zones-are-their-own-generic": non_shifting_zones_are_their_own_generic,
         "prefix-zone-wants-three-digits": prefix_zone_wants_three_digits,
+        "errors-quote-a-bounded-token": errors_quote_a_bounded_token,
         "abbrev-defaults-to-now": abbrev_defaults_to_now,
         "package-and-module-agree": package_and_module_agree,
     }

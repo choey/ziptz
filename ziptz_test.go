@@ -391,6 +391,41 @@ var implemented = map[string]func(*testing.T, testData){
 	// question nobody asked. Python had no such check for a while and the two
 	// ports disagreed here, in the one place the sweep cannot look: every token
 	// it asks about is well formed by construction.
+	// An error is written to be printed as-is, which means it can land in a log
+	// line, so the token it quotes has to be bounded and printable. 100,000
+	// digits made a 100,065-character error, and a newline made an error that
+	// was two log lines with the second one attacker-written.
+	"errors-quote-a-bounded-token": func(t *testing.T, d testData) {
+		long := strings.Repeat("9", 100000)
+		for _, c := range []struct{ name, token string }{
+			{"very long", long},
+			{"newline", "941\nCRITICAL not really"},
+			{"ansi", "941\x1b[31m"},
+			{"astral", "941\U0001F4A9x"},
+		} {
+			_, err := Zone(c.token)
+			if err == nil {
+				t.Fatalf("Zone(%s): want an error", c.name)
+			}
+			msg := err.Error()
+			if len(msg) > 120 {
+				t.Errorf("Zone(%s): error is %d chars; it must not echo the token whole",
+					c.name, len(msg))
+			}
+			for _, r := range msg {
+				if r < ' ' || r > '~' {
+					t.Errorf("Zone(%s): error contains %q, which is not printable ASCII",
+						c.name, r)
+					break
+				}
+			}
+		}
+		// and a short one is still quoted whole rather than trimmed
+		if _, err := Zone("9411"); err == nil || !strings.Contains(err.Error(), "\"9411\"") {
+			t.Errorf("Zone(\"9411\"): want the token quoted whole, got %v", err)
+		}
+	},
+
 	"prefix-zone-wants-three-digits": func(t *testing.T, d testData) {
 		for _, p3 := range []string{"", "9", "99", "9999", "94110", " 94", "94 "} {
 			if got := PrefixZone(p3); got != "" {

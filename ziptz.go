@@ -36,6 +36,7 @@ package ziptz
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 )
@@ -221,13 +222,44 @@ func ExactZone(zip5 string) string {
 	return exactZones()[zip5]
 }
 
+// shown is how much of a rejected token an error is willing to quote, and
+// show is what it quotes. The text is written to be printed as-is, which means
+// it can end up in a log line, so a token arriving from a form or a socket
+// cannot be echoed whole: 100,000 digits made a 100,065-character error, and a
+// newline in the middle made an error that was two log lines, the second of
+// them attacker-written.
+//
+// Anything outside printable ASCII becomes "?" rather than an escape, because
+// %q and Python's !r disagree about non-ASCII and this has to be one string in
+// both. Ranged over runes, not bytes, for the same reason.
+const shown = 20
+
+func show(token string) string {
+	var b strings.Builder
+	i := 0
+	for _, r := range token {
+		if i == shown {
+			b.WriteString("...")
+			break
+		}
+		if r >= ' ' && r <= '~' {
+			b.WriteRune(r)
+		} else {
+			b.WriteByte('?')
+		}
+		i++
+	}
+	return b.String()
+}
+
 // Zone is the IANA zone name for a 3- or 5-digit US ZIP, e.g. "America/Denver".
 // It reports an error if the token is not a ZIP code, or names a prefix the
 // Postal Service has not assigned.
 func Zone(token string) (string, error) {
 	if !isZIP(token) {
 		return "", fmt.Errorf(
-			"\"%s\" is not a US ZIP code; give all five digits, or the first three", token)
+			"\"%s\" is not a US ZIP code; give all five digits, or the first three",
+			show(token))
 	}
 	prefix := token[:3]
 	// an exact ZIP beats its prefix's majority; three digits have only the

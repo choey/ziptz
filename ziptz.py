@@ -219,7 +219,33 @@ def _exact_index() -> dict[str, str]:
 
 def exact_zone(zip5: str) -> str:
     """The zone name for one exact 5-digit ZIP, or "" if its prefix gets it right."""
+    if not isinstance(zip5, str) or len(zip5) != 5:
+        return ""
     return _exact_index().get(zip5, "")
+
+
+# How much of a rejected token an error is willing to quote, and what it will
+# quote. The text is written to be printed as-is, which means it can end up in
+# a log line, so a token arriving from a form or a socket cannot be echoed
+# whole: 100,000 digits made a 100,065-character error, and a newline in the
+# middle made an error that was two log lines, the second of them attacker-
+# written.
+#
+# Anything outside printable ASCII becomes "?" rather than an escape, because
+# Go's %q and Python's !r disagree about non-ASCII and this has to be one
+# string in both. Counted in characters, not bytes, for the same reason.
+_shown = 20
+
+
+def _show(token: str) -> str:
+    """A token as an error may quote it: printable ASCII, 20 characters."""
+    out = []
+    for i, ch in enumerate(token):
+        if i == _shown:
+            out.append("...")
+            break
+        out.append(ch if " " <= ch <= "~" else "?")
+    return "".join(out)
 
 
 def zone(token: str) -> str:
@@ -227,10 +253,22 @@ def zone(token: str) -> str:
 
     Raises ZipError if the token is not a ZIP code, or names a prefix the
     Postal Service has not assigned.
+
+    isinstance is checked because bytes would otherwise pass every test here --
+    b"94110" has a length, isascii() and isdigit() -- and then miss both
+    indexes, so a caller who forgot to decode was told that San Francisco's
+    prefix does not exist, with b'941' in the message. Go cannot express the
+    mistake, so nothing but this catches it.
     """
-    if len(token) not in (3, 5) or not (token.isascii() and token.isdigit()):
+    if not isinstance(token, str) or len(token) not in (3, 5) or not (
+        token.isascii() and token.isdigit()
+    ):
+        # repr for a non-str, so that b"94110" is visibly bytes rather than
+        # silently printing as though it were the string. Through _show either
+        # way: a repr is as unbounded as the thing it describes.
+        shown = _show(token if isinstance(token, str) else repr(token))
         raise ZipError(
-            f'"{token}" is not a US ZIP code; give all five digits, or the first three'
+            f'"{shown}" is not a US ZIP code; give all five digits, or the first three'
         )
     prefix = token[:3]
     # an exact ZIP beats its prefix's majority; three digits have only the

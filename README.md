@@ -27,13 +27,14 @@ tokens through both and compares every answer. Not a claim; a build step.
 ## What it is for, and what it is not for
 
 It is small enough to stop being a dependency and start being a file. The
-library is a single 10 KB source file per language, 1.3 KB of which is the
-tables, and it occupies under a megabyte once imported. Neither side has a
-dependency, and `Zone` and `Generic` read no time zone database at all, so both
-answer on a machine that has none. That is what makes vendoring one file a real
-option rather than a compromise.
+library is a single 13 KB source file per language, 1.3 KB of which is the
+tables, and its own footprint once imported is about 120 KB on top of the
+standard library it needs. Neither side has a dependency, and `Zone` and
+`Generic` read no time zone database at all, so both answer on a machine that
+has none. That is what makes vendoring one file a real option rather than a
+compromise.
 
-The 23 KB wheel is mostly not the library: the tests and their case file ship
+The 24 KB wheel is mostly not the library: the tests and their case file ship
 with it on purpose, so an installed copy can prove itself where it landed
 rather than only in a checkout.
 
@@ -139,11 +140,12 @@ digits, and for prefixes the Postal Service has never assigned. Python raises
 `ZipError`, a `ValueError`. Both error texts are written to be printed as-is.
 
 The last two are the two table lookups `Zone` is built from, exposed for a
-caller that wants to know which of them answered. Neither validates its input
-and neither reports an error: each returns `""` for anything it has no record
-of. For `ExactZone` that is almost every ZIP — only the 233 exceptions have a
-record at all — so `""` there means *no exception; the prefix is the answer*,
-not *unknown*. `Zone` is exactly the two composed in that order.
+caller that wants to know which of them answered. Neither reports an error:
+each returns `""` both for anything that is not a well-formed prefix or ZIP
+and for anything it simply has no record of. For `ExactZone` the second is
+almost every ZIP — only the 233 exceptions have a record at all — so `""`
+there means *no exception; the prefix is the answer*, not *unknown*. `Zone` is
+exactly the two composed in that order.
 
 ### What `Location` costs
 
@@ -164,9 +166,9 @@ one zone, one object. Go does not, and every `Location` is a file read. Hold the
 result if you are calling it per row of anything, and note that `Abbrev` goes
 through `Location` and inherits the same cost.
 
-`Zone` and `Generic` are the cheap ones in both languages: two map lookups, no
-I/O at all, and no per-call allocation once the first call has unpacked the
-tables.
+`Zone` and `Generic` are the cheap ones in both languages: two map lookups and
+no I/O at all once the first call has unpacked the tables. Go allocates nothing
+per call; Python allocates one short slice, for the prefix.
 
 ### The three names for one zone
 

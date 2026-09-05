@@ -1,0 +1,17 @@
+# What the sdist carries beyond the Python package.
+#
+# Without this it shipped only the Python half, while carrying a README that
+# documents `make test`, `make regen` and `go test ./...` -- none of which the
+# sdist could run, and one of which is how you would check the two halves still
+# agree. An sdist is meant to be the project, not the importable part of it.
+include CHANGELOG.md
+include Makefile
+include go.mod
+include ziptz.go
+include ziptz_test.go
+recursive-include tools *.py *.go
+recursive-include .github *.yml
+
+# Not the generator's download cache, which is megabytes and reproducible from
+# the URL inside genzips.py.
+prune tools/cache

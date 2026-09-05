@@ -56,7 +56,8 @@
     "every-zone-has-a-case",
     "generic-covers-every-zone",
     "non-shifting-zones-are-their-own-generic",
-    "prefix-zone-wants-three-digits"
+    "prefix-zone-wants-three-digits",
+    "errors-quote-a-bounded-token"
   ],
 
   "language_only": {
