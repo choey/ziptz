@@ -3,7 +3,12 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ziptz"
+# The distribution name, which is not the import name. `ziptz` on PyPI is a
+# 2013-era registration with no files ever attached to it -- `pip install
+# ziptz` fails for everyone -- and PEP 541 is the only route to it, measured in
+# months. The `-us` is accurate rather than apologetic: this resolves US ZIP
+# codes and nothing else. The package still imports as `ziptz`.
+name = "ziptz-us"
 version = "0.1.0"
 description = "US ZIP code to IANA time zone, standard library only"
 requires-python = ">=3.9"

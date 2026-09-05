@@ -24,6 +24,45 @@ wording of the errors — the tables are generated into both in one pass by
 [`tools/genzips.py`](tools/genzips.py), and `make test` puts all 101,000
 tokens through both and compares every answer. Not a claim; a build step.
 
+## What it is for, and what it is not for
+
+It is small enough to stop being a dependency and start being a file. The
+library is a single 10 KB source file per language, 1.3 KB of which is the
+tables, and it occupies under a megabyte once imported. Neither side has a
+dependency, and `Zone` and `Generic` read no time zone database at all, so both
+answer on a machine that has none. That is what makes vendoring one file a real
+option rather than a compromise.
+
+The 23 KB wheel is mostly not the library: the tests and their case file ship
+with it on purpose, so an installed copy can prove itself where it landed
+rather than only in a checkout.
+
+It covers the places a US-only table usually forgets:
+
+```
+00601  America/Puerto_Rico     00802  America/Puerto_Rico   (US Virgin Islands)
+96799  Pacific/Pago_Pago       96910  Pacific/Guam
+96950  Pacific/Guam            (Northern Mariana Islands)
+```
+
+And it answers a 3-digit prefix, not just a whole ZIP, which is what you have
+when an address is partial or a form was only half filled in.
+
+Three things it is deliberately or unavoidably bad at:
+
+- **Bulk lookups.** Every five-digit query binary-searches the run table and
+  then scans the exception list. That is nothing for one lookup and the wrong
+  shape for millions of them; a flat dictionary would beat it comfortably, and
+  this trades that away for the 1.3 KB.
+- **Zone identity.** About 34 IANA zones are folded onto the 11 that agree with
+  them *today*, so a ZIP in Knox County, Indiana answers `America/New_York`
+  rather than `America/Indiana/Knox`. The clock is right; the name is coarser
+  than the database's. [When to
+  regenerate](#when-to-regenerate) explains what keeps that true.
+- **Validating ZIP codes.** A five-digit code with an assigned prefix always
+  gets an answer, whether or not the Postal Service has ever issued it. An
+  error means "no such prefix", never "no such ZIP".
+
 ## Accuracy
 
 Give all five digits and the answer is exact. Three digits — the prefix alone —
@@ -50,8 +89,15 @@ release. They are wrong for historical dates: several places have changed zone
 
 ```sh
 go get github.com/choey/ziptz
-pip install ziptz
+pip install ziptz-us          # imports as ziptz; see below
 ```
+
+The Python distribution is `ziptz-us` and the module is `ziptz` — the same
+split as `python-dateutil`/`dateutil`. `ziptz` on PyPI is a 2013-era name
+registration with no files ever attached, so `pip install ziptz` fails for
+everyone; the `-us` is also simply true, since this resolves US ZIP codes and
+nothing else. Go has no central registry, so the import path there is the
+repository's own.
 
 Or copy it. Each side is one standard-library-only file: drop `ziptz.go` into
 a package of your own, or `ziptz.py` next to whatever imports it — no build

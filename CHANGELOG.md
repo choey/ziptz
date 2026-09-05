@@ -22,6 +22,12 @@ its import path changed with it:
 github.com/choey/clock/ziptz   ->   github.com/choey/ziptz
 ```
 
+On PyPI the distribution is **`ziptz-us`**, while the module is still `ziptz`.
+The bare name is held by a 2013-era registration with no files attached, so
+`pip install ziptz` fails for everyone and only PEP 541 could free it; `-us` is
+in any case an accurate thing to call a library that resolves US ZIP codes and
+nothing else. Nobody's `import ziptz` changes.
+
 Nothing else changed in the split; the tables, the answers and the error texts
 are the ones the clock had been using.
 
