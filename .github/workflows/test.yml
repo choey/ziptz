@@ -53,6 +53,14 @@ jobs:
       - name: compile the Python side
         run: python3 -m compileall -q ziptz.py __init__.py test_ziptz.py tools
 
+      # The annotations are shipped, so they are a promise to callers rather
+      # than a comment: --strict is what keeps them true. It has already caught
+      # one -- abbrev() returning tzinfo.tzname()'s Optional through a -> str.
+      - name: mypy
+        run: |
+          pip install mypy
+          mypy --strict ziptz.py
+
       # Both suites, the text-level parity of the two generated tables, and the
       # sweep -- every ZIP there is, through both libraries, compared.
       - name: make test

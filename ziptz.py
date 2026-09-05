@@ -214,7 +214,13 @@ def abbrev(token: str, at: datetime | None = None) -> str:
     tz = location(token)
     if at is None:
         at = datetime.now(_timezone.utc)
-    return at.astimezone(tz).tzname()
+    # tzname() is Optional on tzinfo in general, and a type checker reading
+    # that signature cannot know this one is always a ZoneInfo -- which names
+    # every zone ZONES can hold, so None is unreachable here. Spelt as a
+    # fallback rather than an assert: a library that raises where it could
+    # answer is worse, and an empty abbreviation would be visibly wrong on the
+    # face of a clock if the unreachable ever happened.
+    return at.astimezone(tz).tzname() or ""
 
 
 def generic(token: str) -> str:
