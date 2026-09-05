@@ -115,9 +115,22 @@ const exceptions = "324E0156368E06546367697077373E380203070809101112151617212223
 // Binary search over fixed-width records; the string comparison is exact
 // because zero-padded 3-digit decimals sort lexicographically the way they sort
 // numerically, so no integer parsing is involved on either side of the port.
+//
+// That comparison is also why the argument is checked before it is used. The
+// search finds the last record sorting at or below its argument, so anything
+// that is not a prefix still finds something: "99" sorts below "990", "9999"
+// above "995", and "94 " below "941" -- which answered Los Angeles for a
+// space. Python checked none of this and disagreed here; neither side checked
+// the digits, so both were wrong about "94 " together. The sweep sees neither,
+// since every token it asks about is well formed by construction.
 func PrefixZone(p3 string) string {
 	if len(p3) != 3 {
 		return ""
+	}
+	for i := 0; i < 3; i++ {
+		if p3[i] < '0' || p3[i] > '9' {
+			return ""
+		}
 	}
 	lo, hi, hit := 0, len(runs)/4-1, -1
 	for lo <= hi {

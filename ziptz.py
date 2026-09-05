@@ -136,7 +136,23 @@ def prefix_zone(p3: str) -> str:
     Binary search over fixed-width records; the string comparison is exact
     because zero-padded 3-digit decimals sort lexicographically the way they
     sort numerically, so no integer parsing is involved on either side.
+
+    That comparison is also why the argument is checked before it is used. The
+    search finds the last record sorting at or below its argument, so anything
+    that is not a prefix still finds *something*: "99" sorts below "990" and
+    answered Los Angeles, "9999" sorts above "995" and answered Anchorage, and
+    "94 " sorts below "941" and answered Los Angeles for a space. Go checked
+    the length and this did not, so the two ports disagreed on a public
+    function -- and neither checked the digits, so both were wrong about
+    "94 " together. The sweep sees neither: every token it asks about is well
+    formed by construction.
+
+    Checked against the ASCII range rather than str.isdigit(), which is true of
+    "١" and "１" as well as "1" -- the two ports have to accept the
+    same strings.
     """
+    if len(p3) != 3 or not all("0" <= c <= "9" for c in p3):
+        return ""
     lo, hi, hit = 0, len(RUNS) // 4 - 1, -1
     while lo <= hi:
         mid = (lo + hi) // 2
