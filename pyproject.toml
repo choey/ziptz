@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Localization",
     "Topic :: Utilities",
+    "Typing :: Typed",
 ]
 
 [project.urls]
@@ -53,4 +54,4 @@ ziptz = "."
 # copy can still prove itself -- `python3 -m unittest ziptz.test_ziptz`. Go
 # ships its tests to whoever fetches the module too; this keeps that even.
 [tool.setuptools.package-data]
-ziptz = ["testdata/*.json"]
+ziptz = ["testdata/*.json", "py.typed"]

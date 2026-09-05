@@ -79,7 +79,10 @@ jobs:
           wheel = next(pathlib.Path("dist").glob("*.whl"))
           names = zipfile.ZipFile(wheel).namelist()
           print("\n".join(sorted(names)))
-          for want in ("ziptz/ziptz.py", "ziptz/testdata/cases.json"):
+          # py.typed is the one of these that is silent when it goes missing:
+          # the package still installs and still works, it just stops being
+          # typed, and nothing but this notices.
+          for want in ("ziptz/ziptz.py", "ziptz/testdata/cases.json", "ziptz/py.typed"):
               assert want in names, f"missing from the wheel: {want}"
           # NOTICE carries the ODbL attribution; a wheel without it is a
           # redistribution that dropped something it has to keep.

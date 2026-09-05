@@ -1,0 +1,3 @@
+# PEP 561: the annotations in ziptz.py are meant to be used. This marker is
+# what tells mypy and the editors to read them out of the installed package
+# rather than ignoring it as untyped.

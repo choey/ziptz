@@ -65,6 +65,11 @@ hands through to that module — which is what lets a clone `import ziptz` with
 nothing installed. A test compares the two, since only the package form is
 what a wheel contains.
 
+The Python side is annotated and ships `py.typed`, so mypy and editors read the
+signatures rather than treating the package as untyped. The annotations are
+`from __future__ import annotations` strings, which is what lets them be spelled
+`datetime | None` while the package still imports on the 3.9 it supports.
+
 ## API
 
 | Go | Python | |
