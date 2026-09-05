@@ -87,6 +87,28 @@ of. For `ExactZone` that is almost every ZIP — only the 233 exceptions have a
 record at all — so `""` there means *no exception; the prefix is the answer*,
 not *unknown*. `Zone` is exactly the two composed in that order.
 
+### What `Location` costs
+
+`Location` and `location` return the same thing under two names: `*time.Location`
+is Go's loaded zone and `ZoneInfo` is Python's, and neither language spells it
+the other's way. What differs is the price of asking twice, and that is the
+standard libraries' doing rather than this library's.
+
+```
+20,000 calls for one zone       (one machine; the ratio is the point, not the ms)
+  Go   time.LoadLocation      459 ms    reads the tz database every call
+  Py   ZoneInfo                 2 ms    interned by name; the first call does the work
+  Py   ZoneInfo.no_cache    1,053 ms    what that cache is saving
+```
+
+Python interns by name, so `location("94110") is location("90210")` — two ZIPs,
+one zone, one object. Go does not, and every `Location` is a file read. Hold the
+result if you are calling it per row of anything, and note that `Abbrev` goes
+through `Location` and inherits the same cost.
+
+`Zone` and `Generic` are the cheap ones in both languages: a binary search and a
+short scan over a string constant, with no I/O at all and nothing to cache.
+
 ### The three names for one zone
 
 `Zone` gives the IANA name, `Abbrev` the abbreviation at an instant, `Generic`
