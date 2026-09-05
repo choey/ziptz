@@ -1,6 +1,10 @@
 ziptz
 Copyright (c) 2026 cho
 
+Distributed on PyPI as "ziptz-us" and imported as "ziptz"; the Go module is
+github.com/choey/ziptz. All three name this one library, so a licence audit
+that finds this file under ziptz_us-*.dist-info/ is looking at the right thing.
+
 The source code in this repository is licensed under the MIT License; see
 LICENSE.
 
