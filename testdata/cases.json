@@ -57,7 +57,8 @@
     "generic-covers-every-zone",
     "non-shifting-zones-are-their-own-generic",
     "prefix-zone-wants-three-digits",
-    "errors-quote-a-bounded-token"
+    "errors-quote-a-bounded-token",
+    "the-index-matches-the-tables"
   ],
 
   "language_only": {

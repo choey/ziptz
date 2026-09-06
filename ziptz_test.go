@@ -2,6 +2,7 @@ package ziptz
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -395,6 +396,59 @@ var implemented = map[string]func(*testing.T, testData){
 	// line, so the token it quotes has to be bounded and printable. 100,000
 	// digits made a 100,065-character error, and a newline made an error that
 	// was two log lines with the second one attacker-written.
+	// The dicts the first lookup builds must answer exactly what walking the
+	// tables by hand answers.
+	//
+	// This is the newest machinery here and the only part with a second
+	// representation of the same data: runs and exceptions ship, and the index
+	// is derived from them once, at runtime. Every other check reads the
+	// derived answer, so a build that dropped a group or mis-sliced a suffix
+	// would look correct to all of them. This walks the strings independently,
+	// through the same helpers that check the tables are well formed, and holds
+	// the lookups to that.
+	"the-index-matches-the-tables": func(t *testing.T, d testData) {
+		listed := map[string]bool{}
+		for _, g := range exceptionGroups() {
+			want := zones[g.letter]
+			for _, suffix := range g.suffixes {
+				zip := g.prefix + suffix
+				listed[zip] = true
+				if got := ExactZone(zip); got != want {
+					t.Errorf("ExactZone(%q) = %q, want %q", zip, got, want)
+				}
+			}
+		}
+		if len(listed) != d.Tables["exceptions"] {
+			t.Errorf("%d distinct exception ZIPs, want %d", len(listed), d.Tables["exceptions"])
+		}
+		// and nothing the table does not name. A stride rather than all
+		// 100,000: the sweep does those, and this is about the index's shape.
+		for n := 0; n < 100000; n += 977 {
+			zip := fmt.Sprintf("%05d", n)
+			if !listed[zip] {
+				if got := ExactZone(zip); got != "" {
+					t.Errorf("ExactZone(%q) = %q, want \"\"", zip, got)
+				}
+			}
+		}
+		// the run table, expanded the long way: a record reaches to the next
+		// record's prefix, and the last one to 999
+		recs := runRecords()
+		for i, r := range recs {
+			stop := 1000
+			if i+1 < len(recs) {
+				stop = atoi3(recs[i+1].prefix)
+			}
+			want := zones[r.letter]
+			for n := atoi3(r.prefix); n < stop; n++ {
+				p3 := fmt.Sprintf("%03d", n)
+				if got := PrefixZone(p3); got != want {
+					t.Errorf("PrefixZone(%q) = %q, want %q", p3, got, want)
+				}
+			}
+		}
+	},
+
 	"errors-quote-a-bounded-token": func(t *testing.T, d testData) {
 		long := strings.Repeat("9", 100000)
 		for _, c := range []struct{ name, token string }{

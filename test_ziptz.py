@@ -212,6 +212,44 @@ class Checks(unittest.TestCase):
                 with self.subTest(zone=case["zone"]):
                     self.assertEqual(case["generic"], case["winter"])
 
+    def the_index_matches_the_tables(self):
+        """The dicts the first lookup builds must answer exactly what walking
+        the tables by hand answers.
+
+        This is the newest machinery here and the only part with a second
+        representation of the same data: RUNS and EXCEPTIONS ship, and the
+        index is derived from them once, at runtime. Every other check reads
+        the derived answer, so a build that dropped a group or mis-sliced a
+        suffix would look correct to all of them. This walks the strings
+        independently -- through the same helpers that check the tables are
+        well formed -- and holds the lookups to that.
+        """
+        for prefix, letter, _, suffixes in exception_groups():
+            zone_name = ziptz.ZONES[letter]
+            for suffix in suffixes:
+                with self.subTest(zip=prefix + suffix):
+                    self.assertEqual(ziptz.exact_zone(prefix + suffix), zone_name)
+
+        # and nothing the table does not name
+        listed = {p + s for p, _, _, ss in exception_groups() for s in ss}
+        self.assertEqual(len(listed), TABLES["exceptions"])
+        for n in range(0, 100000, 977):  # a stride, not all 100,000: the sweep does those
+            token = f"{n:05d}"
+            if token not in listed:
+                with self.subTest(zip=token):
+                    self.assertEqual(ziptz.exact_zone(token), "")
+
+        # the run table, expanded the long way: a record's zone reaches to the
+        # next record's prefix, and the last one to 999
+        records = run_records()
+        for i, (start, letter) in enumerate(records):
+            end = records[i + 1][0] if i + 1 < len(records) else "999"
+            stop = 1000 if end == "999" and i + 1 == len(records) else int(end)
+            for n in range(int(start), stop):
+                with self.subTest(prefix=f"{n:03d}"):
+                    self.assertEqual(
+                        ziptz.prefix_zone(f"{n:03d}"), ziptz.ZONES.get(letter, ""))
+
     def errors_quote_a_bounded_token(self):
         """An error is written to be printed as-is, which means it can land in
         a log line, so the token it quotes has to be bounded and printable.
@@ -324,6 +362,7 @@ class Checks(unittest.TestCase):
         "generic-covers-every-zone": generic_covers_every_zone,
         "non-shifting-zones-are-their-own-generic": non_shifting_zones_are_their_own_generic,
         "prefix-zone-wants-three-digits": prefix_zone_wants_three_digits,
+        "the-index-matches-the-tables": the_index_matches_the_tables,
         "errors-quote-a-bounded-token": errors_quote_a_bounded_token,
         "abbrev-defaults-to-now": abbrev_defaults_to_now,
         "package-and-module-agree": package_and_module_agree,

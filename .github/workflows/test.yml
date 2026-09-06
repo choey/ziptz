@@ -23,7 +23,7 @@ jobs:
           - go: "1.21"
             python: "3.9"
           - go: "stable"
-            python: "3.13"
+            python: "3.14"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,7 +75,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - run: pip install build twine
       - run: python -m build
       - name: the metadata PyPI will render
