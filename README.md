@@ -21,7 +21,7 @@ ziptz.generic("94110")        # 'PT', whatever the date
 
 The two implementations answer identically for every ZIP code, down to the
 wording of the errors — the tables are generated into both in one pass by
-[`tools/genzips.py`](tools/genzips.py), and `make test` puts all 101,000
+[`tools/genzips.py`](https://github.com/choey/ziptz/blob/main/tools/genzips.py), and `make test` puts all 101,000
 tokens through both and compares every answer. Not a claim; a build step.
 
 ## What it is for, and what it is not for
@@ -313,9 +313,9 @@ can be imported two ways, as a module and as a package.
 
 ## Licence
 
-The code is MIT; see [LICENSE](LICENSE).
+The code is MIT; see [LICENSE](https://github.com/choey/ziptz/blob/main/LICENSE).
 
-The tables are a separate question, and [NOTICE](NOTICE) is the answer to it.
+The tables are a separate question, and [NOTICE](https://github.com/choey/ziptz/blob/main/NOTICE) is the answer to it.
 They were produced from public-domain Census centroids resolved through
 timezone-boundary-builder, which is ODbL — so `NOTICE` carries that
 attribution and the reasoning for treating 1.3 KB of zone names as a produced
