@@ -9,10 +9,15 @@ build-backend = "setuptools.build_meta"
 # months. The `-us` is accurate rather than apologetic: this resolves US ZIP
 # codes and nothing else. The package still imports as `ziptz`.
 name = "ziptz-us"
-version = "0.1.0"
+version = "0.1.1"
 description = "US ZIP code to IANA time zone, standard library only"
 requires-python = ">=3.9"
-readme = "README.md"
+# A PyPI-facing description rather than the repository README, which leads
+# with Go and is right to: this page is reached by "pip install ziptz-us" and
+# should read like a Python package. The long one on GitHub stays canonical
+# and covers both implementations; this is deliberately short so there is
+# little to drift.
+readme = "README-pypi.md"
 # PEP 639. The table form and the License:: classifier are both deprecated
 # with a removal date of 2027-02-18, and the argument for keeping them -- that
 # PEP 639 needs setuptools 77 where this asked for 61 -- was wrong: that floor

@@ -12,6 +12,18 @@ The version is written in `ziptz.go`, `ziptz.py` and `pyproject.toml`, and
 
 Nothing yet.
 
+## 0.1.1
+
+Documentation only; the library is byte-for-byte 0.1.0.
+
+- The PyPI page has its own description now. The repository README leads with
+  Go, which is right for a project that is two implementations of one table,
+  and wrong for a page reached by `pip install ziptz-us` -- so that page is
+  Python's, and links here for the rest.
+- Three README links (`LICENSE`, `NOTICE`, `tools/genzips.py`) were relative,
+  which GitHub resolves against the repository and PyPI resolves against
+  pypi.org. On the 0.1.0 project page they are 404s. Absolute now.
+
 ## 0.1.0
 
 First release, and the first as a module of its own — the library was extracted

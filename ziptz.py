@@ -55,7 +55,7 @@ __all__ = [
     "exact_zone",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 class ZipError(ValueError):

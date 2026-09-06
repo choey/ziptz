@@ -43,7 +43,7 @@ import (
 
 // Version is the release this source belongs to; the Python module carries the
 // same string.
-const Version = "0.1.0"
+const Version = "0.1.1"
 
 // runs maps US ZIP prefixes to time zones, run-length encoded as fixed
 // four-byte records "NNNc": the 3-digit prefix a run starts at, then a zone

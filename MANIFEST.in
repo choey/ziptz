@@ -5,6 +5,7 @@
 # sdist could run, and one of which is how you would check the two halves still
 # agree. An sdist is meant to be the project, not the importable part of it.
 include CHANGELOG.md
+include README.md
 include Makefile
 include go.mod
 include ziptz.go
