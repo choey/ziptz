@@ -30,16 +30,24 @@ func main() {
 
 // say prints one answer, error text included: what it refuses and why is as
 // much a part of the port as what it resolves.
+// PrefixZone and ExactZone are swept alongside Zone and Generic because they
+// are public and because they are the two that answer "" rather than an error
+// -- so a disagreement between the ports shows up as an empty column here and
+// nowhere else. Location and Abbrev are left out on purpose: they read the
+// system tz database, which makes them a test of the machine as much as of the
+// tables, and Abbrev over 101,000 tokens costs half a minute of LoadLocation
+// for an answer Zone has already settled.
 func say(out *bufio.Writer, token string) {
+	tail := ziptz.PrefixZone(token[:3]) + "\t" + ziptz.ExactZone(token)
 	name, err := ziptz.Zone(token)
 	if err != nil {
-		fmt.Fprintf(out, "%s\t!%s\n", token, err)
+		fmt.Fprintf(out, "%s\t!%s\t%s\n", token, err, tail)
 		return
 	}
 	generic, err := ziptz.Generic(token)
 	if err != nil {
-		fmt.Fprintf(out, "%s\t!%s\n", token, err)
+		fmt.Fprintf(out, "%s\t!%s\t%s\n", token, err, tail)
 		return
 	}
-	fmt.Fprintf(out, "%s\t%s\t%s\n", token, name, generic)
+	fmt.Fprintf(out, "%s\t%s\t%s\t%s\n", token, name, generic, tail)
 }

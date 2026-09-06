@@ -19,11 +19,21 @@ import ziptz  # noqa: E402  (after the path, on purpose)
 
 def say(token):
     """One answer, error text included: what it refuses and why is as much a
-    part of the port as what it resolves."""
+    part of the port as what it resolves.
+
+    prefix_zone and exact_zone are swept alongside zone and generic because
+    they are public and because they are the two that answer "" rather than
+    raising -- so a disagreement between the ports shows up as an empty column
+    here and nowhere else. Location and Abbrev are left out on purpose: they
+    read the system tz database, which makes them a test of the machine as much
+    as of the tables, and Abbrev over 101,000 tokens costs half a minute of
+    LoadLocation on the Go side for an answer Zone has already settled.
+    """
+    tail = f"{ziptz.prefix_zone(token[:3])}\t{ziptz.exact_zone(token)}"
     try:
-        return f"{token}\t{ziptz.zone(token)}\t{ziptz.generic(token)}\n"
+        return f"{token}\t{ziptz.zone(token)}\t{ziptz.generic(token)}\t{tail}\n"
     except ziptz.ZipError as exc:
-        return f"{token}\t!{exc}\n"
+        return f"{token}\t!{exc}\t{tail}\n"
 
 
 def main():
