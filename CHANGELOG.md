@@ -12,6 +12,18 @@ The version is written in `ziptz.go`, `ziptz.py` and `pyproject.toml`, and
 
 Nothing yet.
 
+## 0.1.2
+
+No change to what any ZIP resolves to.
+
+- The lazy index the first lookup builds is now tested against the tables it is
+  derived from. It was the only machinery here holding a second representation
+  of the same data, and every other check read the derived answer -- so a build
+  that dropped a group would have looked correct to all of them, and to the
+  sweep, which compares the two ports to each other and cannot see a bug present
+  in both.
+- Python 3.14 is the tested ceiling, and a classifier says so.
+
 ## 0.1.1
 
 Documentation only; the library is byte-for-byte 0.1.0.
